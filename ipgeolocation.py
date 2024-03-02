@@ -37,9 +37,32 @@ class SimpleWebServer(object):
 </html>"""
 
 if __name__ == '__main__':
-    # Update CherryPy configuration to listen on port 80 and bind to all network interfaces
+    # Configure CherryPy to use SSL for HTTPS
     cherrypy.config.update({
         'server.socket_host': '0.0.0.0',
-        'server.socket_port': 80,
+        'server.ssl_module': 'builtin',
+        'server.ssl_certificate': 'server.crt', # Path to your SSL certificate
+        'server.ssl_private_key': 'server.key', # Path to your SSL private key
     })
-    cherrypy.quickstart(SimpleWebServer())
+    
+    # Configure a second HTTP server (if necessary) on port 80
+    from cherrypy._cpserver import Server
+    def run_dual_http_https():
+        # Configure server for HTTPS
+        server1 = Server()
+        server1.socket_host = '0.0.0.0'
+        server1.socket_port = 443
+        server1.ssl_module = 'builtin'
+        server1.ssl_certificate = 'server.crt' # Path to your SSL certificate
+        server1.ssl_private_key = 'server.key' # Path to your SSL private key
+        
+        # Configure server for HTTP
+        server2 = Server()
+        server2.socket_host = '0.0.0.0'
+        server2.socket_port = 80
+        server2.subscribe()
+
+        # Start the server
+        cherrypy.quickstart(SimpleWebServer())
+
+    run_dual_http_https()
