@@ -25,7 +25,6 @@ class SimpleWebServer(object):
         with open('visits.log', 'a') as log_file:
             log_file.write(f'IP: {client_ip}, Geolocation Data: {geolocation_data}\n')
         
-        # Your embedded HTML content
         return """<!DOCTYPE html>
 <html>
 <head>
@@ -38,5 +37,9 @@ class SimpleWebServer(object):
 </html>"""
 
 if __name__ == '__main__':
-    cherrypy.config.update({'server.socket_port': 8080})
+    # Update CherryPy configuration to listen on port 80 and bind to all network interfaces
+    cherrypy.config.update({
+        'server.socket_host': '0.0.0.0',
+        'server.socket_port': 80,
+    })
     cherrypy.quickstart(SimpleWebServer())
