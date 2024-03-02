@@ -53,8 +53,8 @@ if __name__ == '__main__':
         server1.socket_host = '0.0.0.0'
         server1.socket_port = 443
         server1.ssl_module = 'builtin'
-        server1.ssl_certificate = 'server.crt' # Path to your SSL certificate
-        server1.ssl_private_key = 'server.key' # Path to your SSL private key
+        server1.ssl_certificate = 'ssl/server.crt' # Path to your SSL certificate
+        server1.ssl_private_key = 'ssl/server.key' # Path to your SSL private key
         
         # Configure server for HTTP
         server2 = Server()
