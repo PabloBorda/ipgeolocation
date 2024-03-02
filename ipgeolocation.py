@@ -1,42 +1,42 @@
-import json
-import logging
+import cherrypy
 import requests
 
-# Set up logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-def get_ip_geolocation(ip_address, api_key='27f48d1d022b425a88542cfde5d25b67'):
+def get_ip_geolocation(ip_address, api_key):
     url = f'https://api.ipgeolocation.io/ipgeo?apiKey={api_key}&ip={ip_address}'
     response = requests.get(url)
-    return response.json() if response.status_code == 200 else None
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
 
-def lambda_handler(event, context):
-    # Extract the source IP from the event object
-    source_ip = event['requestContext']['identity']['sourceIp']
-    
-    # Get geolocation data for the IP address
-    geolocation_data = get_ip_geolocation(source_ip)
-    
-    # Log geolocation data to CloudWatch
-    logger.info(f'Geolocation data for {source_ip}: {json.dumps(geolocation_data)}')
-    
-    # Return basic HTML content
-    html_content = """<!DOCTYPE html>
+class SimpleWebServer(object):
+    @cherrypy.expose
+    def index(self):
+        # Get client IP address
+        client_ip = cherrypy.request.remote.ip
+        
+        # Assuming you have your API key
+        api_key = 'YOUR_API_KEY_HERE'
+        
+        # Get geolocation data for the IP address
+        geolocation_data = get_ip_geolocation(client_ip, api_key)
+        
+        # Log IP and geolocation data
+        with open('visits.log', 'a') as log_file:
+            log_file.write(f'IP: {client_ip}, Geolocation Data: {geolocation_data}\n')
+        
+        # Your embedded HTML content
+        return """<!DOCTYPE html>
 <html>
 <head>
-    <title>Simple Page</title>
+    <title>Embedded Page</title>
 </head>
 <body>
-    <h1>Hello from Lambda!</h1>
-    <p>This is a simple HTML page.</p>
+    <h1>Hello, CherryPy with Embedded HTML and Geolocation!</h1>
+    <p>This is a simple page served by CherryPy with embedded HTML content.</p>
 </body>
 </html>"""
 
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Content-Type": "text/html"
-        },
-        "body": html_content
-    }
+if __name__ == '__main__':
+    cherrypy.config.update({'server.socket_port': 8080})
+    cherrypy.quickstart(SimpleWebServer())
